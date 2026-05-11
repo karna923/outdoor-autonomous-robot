@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-vscode.cpptools",
+    "ms-python.python",
+    "ms-iot.vscode-ros",
+    "espressif.esp-idf-extension",
+    "redhat.vscode-yaml",
+    "eamodio.gitlens",
+    "twxs.cmake"
+  ]
+}
