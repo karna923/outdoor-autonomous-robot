@@ -1,6 +1,0 @@
--Wno-frame-address
--mlongcalls
--fno-builtin-memcpy
--fno-builtin-memset
--fno-builtin-bzero
-"-specs=/home/pushkar/outdoor-autonomous-robot/firmware/robot_firmware/build/specs/picolibc.specs"
