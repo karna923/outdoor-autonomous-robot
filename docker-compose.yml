@@ -1,0 +1,19 @@
+services:
+  micro_ros_agent:
+    image: microros/micro-ros-agent:jazzy
+    network_mode: host
+    command: udp4 --port 8888
+    restart: unless-stopped
+
+  ros2_stack:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    network_mode: host
+    volumes:
+      - ./ros2_ws/src:/ros2_ws/src
+    command: >
+      bash -c "source /opt/ros/jazzy/setup.bash &&
+               source /ros2_ws/install/setup.bash &&
+               ros2 launch outdoor_robot bringup.launch.py"
+    restart: unless-stopped
