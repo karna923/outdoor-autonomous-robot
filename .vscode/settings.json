@@ -25,5 +25,14 @@
   "terminal.integrated.env.linux": {
     "IDF_PATH": "/home/pushkar/esp/esp-idf",
     "ROS_DISTRO": "jazzy"
-  }
+  },
+  "ROS2.distro": "jazzy",
+  "python.autoComplete.extraPaths": [
+    "/opt/ros/jazzy/lib/python3.12/site-packages",
+    "/home/pushkar/microros_ws/install/micro_ros_msgs/lib/python3.12/site-packages"
+  ],
+  "python.analysis.extraPaths": [
+    "/opt/ros/jazzy/lib/python3.12/site-packages",
+    "/home/pushkar/microros_ws/install/micro_ros_msgs/lib/python3.12/site-packages"
+  ]
 }

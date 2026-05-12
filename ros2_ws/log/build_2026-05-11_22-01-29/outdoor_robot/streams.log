@@ -1,0 +1,51 @@
+[0.012s] Invoking command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake /home/pushkar/outdoor-autonomous-robot/ros2_ws/src/outdoor_robot -DCMAKE_INSTALL_PREFIX=/home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot
+[0.056s] -- The C compiler identification is GNU 13.3.0
+[0.100s] -- The CXX compiler identification is GNU 13.3.0
+[0.112s] -- Detecting C compiler ABI info
+[0.179s] -- Detecting C compiler ABI info - done
+[0.188s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.188s] -- Detecting C compile features
+[0.188s] -- Detecting C compile features - done
+[0.195s] -- Detecting CXX compiler ABI info
+[0.271s] -- Detecting CXX compiler ABI info - done
+[0.280s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.280s] -- Detecting CXX compile features
+[0.280s] -- Detecting CXX compile features - done
+[0.284s] -- Found ament_cmake: 2.5.6 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.410s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[0.510s] -- Found ament_lint_auto: 0.17.5 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[0.616s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.616s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/pushkar/outdoor-autonomous-robot/ros2_ws/src/outdoor_robot/include>
+[0.616s] -- Configured cppcheck exclude dirs and/or files: 
+[0.617s] -- Added test 'lint_cmake' to check CMake code style
+[0.618s] -- Added test 'uncrustify' to check C / C++ code style
+[0.618s] -- Configured uncrustify additional arguments: 
+[0.619s] -- Added test 'xmllint' to check XML markup files
+[0.621s] -- Configuring done (0.6s)
+[0.624s] -- Generating done (0.0s)
+[0.626s] -- Build files have been written to: /home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot
+[0.630s] Invoked command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake /home/pushkar/outdoor-autonomous-robot/ros2_ws/src/outdoor_robot -DCMAKE_INSTALL_PREFIX=/home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot
+[0.631s] Invoking command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake --build /home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot -- -j8 -l8
+[0.673s] [ 50%] [32mBuilding CXX object CMakeFiles/robot_node.dir/src/robot_node.cpp.o[0m
+[0.699s] [100%] [32m[1mLinking CXX executable robot_node[0m
+[0.736s] [100%] Built target robot_node
+[0.745s] Invoked command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake --build /home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot -- -j8 -l8
+[0.753s] Invoking command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake --install /home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot
+[0.760s] -- Install configuration: ""
+[0.760s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/lib/outdoor_robot/robot_node
+[0.760s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/ament_index/resource_index/package_run_dependencies/outdoor_robot
+[0.760s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/ament_index/resource_index/parent_prefix_path/outdoor_robot
+[0.760s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/environment/ament_prefix_path.sh
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/environment/ament_prefix_path.dsv
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/environment/path.sh
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/environment/path.dsv
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/local_setup.bash
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/local_setup.sh
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/local_setup.zsh
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/local_setup.dsv
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/package.dsv
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/ament_index/resource_index/packages/outdoor_robot
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/cmake/outdoor_robotConfig.cmake
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/cmake/outdoor_robotConfig-version.cmake
+[0.761s] -- Installing: /home/pushkar/outdoor-autonomous-robot/ros2_ws/install/outdoor_robot/share/outdoor_robot/package.xml
+[0.763s] Invoked command in '/home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com VIRTUAL_ENV_PROMPT=(venv) /usr/bin/cmake --install /home/pushkar/outdoor-autonomous-robot/ros2_ws/build/outdoor_robot
