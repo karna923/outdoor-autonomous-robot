@@ -1,20 +1,10 @@
 {
   "configurations": [
     {
-      "browse": {
-        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
-        "limitSymbolsToIncludedHeaders": false
-      },
-      "includePath": [
-        "/opt/ros/jazzy/include/**",
-        "/home/pushkar/microros_ws/install/micro_ros_agent/include/**",
-        "/home/pushkar/microros_ws/install/micro_ros_msgs/include/**",
-        "/usr/include/**"
-      ],
-      "name": "ros2",
-      "intelliSenseMode": "gcc-x64",
-      "compilerPath": "/usr/bin/gcc",
-      "cStandard": "gnu11",
+      "name": "ESP-IDF",
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "intelliSenseMode": "linux-gcc-x64",
+      "cStandard": "gnu23",
       "cppStandard": "c++17"
     }
   ],
