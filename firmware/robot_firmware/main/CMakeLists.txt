@@ -1,2 +1,3 @@
-idf_component_register(SRCS "robot_firmware.c"
-                    INCLUDE_DIRS ".")
+idf_component_register(SRCS "robot_firmware.cpp"
+                    INCLUDE_DIRS "."
+                    REQUIRES freertos)
