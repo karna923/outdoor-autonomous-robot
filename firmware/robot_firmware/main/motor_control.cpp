@@ -9,25 +9,22 @@ Motor::Motor(int pin_a, int pin_b, ledc_channel_t channel_a, ledc_channel_t chan
   channel_b_ = channel_b;
   current_speed_ = 0;
 
-
-  ledc_channel_config_t channel_a_config = {
-    .gpio_num   = pin_a_,
-    .speed_mode = LEDC_LOW_SPEED_MODE,
-    .channel    = channel_a_,
-    .timer_sel  = LEDC_TIMER_0,
-    .duty       = 0,
-    .hpoint     = 0,
-  };
+  ledc_channel_config_t channel_a_config = {};
+  channel_a_config.gpio_num = pin_a_;
+  channel_a_config.speed_mode = LEDC_LOW_SPEED_MODE;
+  channel_a_config.channel = channel_a_;
+  channel_a_config.timer_sel = LEDC_TIMER_0;
+  channel_a_config.duty = 0;
+  channel_a_config.hpoint = 0;
   ledc_channel_config(&channel_a_config);
 
-    ledc_channel_config_t channel_b_config = {
-    .gpio_num   = pin_b_,
-    .speed_mode = LEDC_LOW_SPEED_MODE,
-    .channel    = channel_b_,
-    .timer_sel  = LEDC_TIMER_0,
-    .duty       = 0,
-    .hpoint     = 0,
-  };
+  ledc_channel_config_t channel_b_config = {};
+  channel_b_config.gpio_num = pin_b_;
+  channel_b_config.speed_mode = LEDC_LOW_SPEED_MODE;
+  channel_b_config.channel = channel_b_;
+  channel_b_config.timer_sel = LEDC_TIMER_0;
+  channel_b_config.duty = 0;
+  channel_b_config.hpoint = 0;
   ledc_channel_config(&channel_b_config);
 }
 
@@ -72,12 +69,12 @@ int Motor::getSpeed() {
 }
 
 void Motor::init_timer() {
-  ledc_timer_config_t timer_config = {
-    .speed_mode = LEDC_LOW_SPEED_MODE,
-    .duty_resolution = LEDC_TIMER_10_BIT,
-    .timer_num = LEDC_TIMER_0,
-    .freq_hz = 20000,
-    .clk_cfg = LEDC_AUTO_CLK,
-  };
-  ledc_timer_config(&timer_config);
+  ledc_timer_config_t timer_config = {};
+    timer_config.speed_mode = LEDC_LOW_SPEED_MODE;
+    timer_config.duty_resolution = LEDC_TIMER_10_BIT;
+    timer_config.timer_num = LEDC_TIMER_0;
+    timer_config.freq_hz = 20000;
+    timer_config.clk_cfg = LEDC_AUTO_CLK;
+    ledc_timer_config(&timer_config);
+
 }
