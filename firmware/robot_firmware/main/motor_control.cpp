@@ -9,14 +9,6 @@ Motor::Motor(int pin_a, int pin_b, ledc_channel_t channel_a, ledc_channel_t chan
   channel_b_ = channel_b;
   current_speed_ = 0;
 
-  ledc_timer_config_t timer_config = {
-    .speed_mode = LEDC_LOW_SPEED_MODE,
-    .duty_resolution = LEDC_TIMER_10_BIT,
-    .timer_num = LEDC_TIMER_0,
-    .freq_hz = 20000,
-    .clk_cfg = LEDC_AUTO_CLK,
-  };
-  ledc_timer_config(&timer_config);
 
   ledc_channel_config_t channel_a_config = {
     .gpio_num   = pin_a_,
@@ -77,4 +69,15 @@ void Motor::stop() {
 
 int Motor::getSpeed() {
   return current_speed_;
+}
+
+void Motor::init_timer() {
+  ledc_timer_config_t timer_config = {
+    .speed_mode = LEDC_LOW_SPEED_MODE,
+    .duty_resolution = LEDC_TIMER_10_BIT,
+    .timer_num = LEDC_TIMER_0,
+    .freq_hz = 20000,
+    .clk_cfg = LEDC_AUTO_CLK,
+  };
+  ledc_timer_config(&timer_config);
 }

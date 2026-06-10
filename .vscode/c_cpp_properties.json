@@ -1,22 +1,29 @@
 {
-  "configurations": [
-    {
-      "browse": {
-        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
-        "limitSymbolsToIncludedHeaders": false
-      },
-      "includePath": [
-        "/opt/ros/jazzy/include/**",
-        "/home/pushkar/microros_ws/install/micro_ros_agent/include/**",
-        "/home/pushkar/microros_ws/install/micro_ros_msgs/include/**",
-        "/usr/include/**"
-      ],
-      "name": "ros2",
-      "intelliSenseMode": "gcc-x64",
-      "compilerPath": "/usr/bin/gcc",
-      "cStandard": "gnu11",
-      "cppStandard": "c++17"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/opt/ros/jazzy/include/**",
+                "/home/pushkar/microros_ws/install/micro_ros_agent/include/**",
+                "/home/pushkar/microros_ws/install/micro_ros_msgs/include/**",
+                "/usr/include/**",
+                "/home/pushkar/.espressif/v6.0.1/esp-idf/components/esp_driver_ledc/include",
+                "/home/pushkar/.espressif/v6.0.1/esp-idf/components/esp_common/include",
+                "/home/pushkar/.espressif/v6.0.1/esp-idf/components/esp_system/test_eh_frame_parser",
+                "/home/pushkar/.espressif/v6.0.1/esp-idf/components/esp_hw_support/include"
+            ],
+            "name": "ros2",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++17",
+            "compileCommands": [
+                "/home/pushkar/outdoor-autonomous-robot/firmware/robot_firmware/build/compile_commands.json"
+            ]
+        }
+    ],
+    "version": 4
 }
