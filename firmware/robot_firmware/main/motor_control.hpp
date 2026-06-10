@@ -2,6 +2,7 @@
 #define MOTOR_CONTROL_HPP
 
 #include "driver/ledc.h"
+#include <cstdint>
 class Motor {
   private:
     int pin_a_;
