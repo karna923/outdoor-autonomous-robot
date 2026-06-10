@@ -26,6 +26,7 @@ Motor::Motor(int pin_a, int pin_b, ledc_channel_t channel_a, ledc_channel_t chan
   channel_b_config.duty = 0;
   channel_b_config.hpoint = 0;
   ledc_channel_config(&channel_b_config);
+
 }
 
   
@@ -76,5 +77,28 @@ void Motor::init_timer() {
     timer_config.freq_hz = 20000;
     timer_config.clk_cfg = LEDC_AUTO_CLK;
     ledc_timer_config(&timer_config);
+
+}
+
+void Motor::setPID(float kp, float ki, float kd) {
+kp_ = kp;
+ki_ = ki;
+kd_ = kd;
+}
+
+float Motor::compute(float setpoint, float actual_velocity) {
+  float error = setpoint - actual_velocity;
+
+  integral_ = integral_ + (error * 0.001f);
+  float derivative = (error - prev_error_) / 0.001f;
+
+  float output = (kp_ * error ) + (ki_ * integral_) + (kd_ * derivative);
+
+  output = std::clamp(output, -100.0f, 100.0f);
+
+  setSpeed((int)output);
+  prev_error_ = error;
+  return output;
+
 
 }

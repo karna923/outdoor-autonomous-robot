@@ -9,6 +9,13 @@ class Motor {
     ledc_channel_t channel_a_;
     ledc_channel_t channel_b_;
     int current_speed_;
+    float kp_;
+    float ki_;
+    float kd_;
+
+    float integral_;
+    float prev_error_;
+
 
 
   public:
@@ -19,6 +26,10 @@ class Motor {
     void stop();
     int getSpeed();
     static void init_timer();
+    float compute(float setpoint, float actual_velocity);
+
+    void setPID(float kp, float ki, float kd);
+
 
 };
 
