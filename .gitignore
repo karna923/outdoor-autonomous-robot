@@ -24,3 +24,5 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+firmware/esp32_2/main/wifi_config.hpp
+firmware/esp32_1/main/wifi_config.hpp
