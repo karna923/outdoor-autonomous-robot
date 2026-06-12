@@ -6,6 +6,30 @@
 #include <cstddef>
 #include "driver/gpio.h"
 
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_netif.h"
+#include "nvs_flash.h"
+#include "freertos/event_groups.h"
+#include "esp_log.h"
+#include "wifi_config.hpp"
+#include <cstring>
+
+
+//micro-ROS
+#include <rcl/rcl.h>
+#include <rclc/rclc.h>
+#include <rclc/executor.h>
+
+//UDP
+#include <rmw_microros/rmw_microros.h>
+
+#include <nav_msgs/msg/odometry.h>
+#include <sensor_msgs/msg/imu.h>
+#include <sensor_msgs/msg/nav_sat_fix.h>
+
+
+
 Motor* motor_fl = nullptr;
 Motor* motor_fr = nullptr;
 Motor* motor_ml = nullptr;
@@ -15,6 +39,49 @@ volatile int32_t enc_count_fl = 0;
 volatile int32_t enc_count_fr = 0;
 volatile int32_t enc_count_ml = 0;
 volatile int32_t enc_count_mr = 0;
+
+
+static EventGroupHandle_t s_wifi_event_group;
+#define WIFI_CONNECTED_BIT BIT0
+
+static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+  if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+    esp_wifi_connect();
+  } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+    ESP_LOGW("wifi", "Disconnected, retrying...");
+    esp_wifi_connect();
+  } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+    ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+    ESP_LOGI("wifi", "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
+    xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+  }
+}
+
+void wifi_init_sta(void) {
+  s_wifi_event_group = xEventGroupCreate();
+
+  ESP_ERROR_CHECK(nvs_flash_init());
+  ESP_ERROR_CHECK(esp_netif_init());
+  ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+  esp_netif_create_default_wifi_sta();
+
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, NULL));
+
+  wifi_config_t wifi_config = {};
+  memcpy(wifi_config.sta.ssid, WIFI_SSID, strlen(WIFI_SSID));
+  memcpy(wifi_config.sta.password, WIFI_PASSWORD, strlen(WIFI_PASSWORD));
+
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+  ESP_ERROR_CHECK(esp_wifi_start());
+
+  xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
+}
 
 
 void IRAM_ATTR isr_enc_fl(void* arg) {
@@ -121,10 +188,13 @@ extern "C" void app_main(void) {
   motor_ml->setPID(50.0f, 5.0f, 0.5f);
   motor_mr->setPID(50.0f, 5.0f, 0.5f);
 
+  wifi_init_sta();
+
 
   xTaskCreate(control_task, "control_task",
               4096, (void*)"Hello ESP32",
               5, NULL);
+  
 
 
   }
