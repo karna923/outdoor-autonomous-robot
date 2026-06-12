@@ -104,11 +104,11 @@ void wifi_init_sta(void) {
 }
 
 void IRAM_ATTR isr_enc_rl(void* arg) {
-    enc_count_rl+=1;
+    enc_count_rl = enc_count_rl + 1;
 }
   
 void IRAM_ATTR isr_enc_rr(void* arg) {
-    enc_count_rr+=1;
+    enc_count_rr = enc_count_rr + 1;
   }
 void control_task(void *param) {
 

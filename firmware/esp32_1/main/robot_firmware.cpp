@@ -18,19 +18,19 @@ volatile int32_t enc_count_mr = 0;
 
 
 void IRAM_ATTR isr_enc_fl(void* arg) {
-    enc_count_fl+=1;
+    enc_count_fl = enc_count_fl + 1;
 }
   
 void IRAM_ATTR isr_enc_fr(void* arg) {
-    enc_count_fr+=1;
+    enc_count_fr = enc_count_fr + 1;
   }
 
 void IRAM_ATTR isr_enc_ml(void* arg) {
-    enc_count_ml+=1;
+    enc_count_ml = enc_count_ml + 1;
   }
 
 void IRAM_ATTR isr_enc_mr(void* arg) {
-    enc_count_mr+=1;
+    enc_count_mr = enc_count_mr + 1;
   }
 void control_task(void *param) {
 
