@@ -7,6 +7,7 @@
 #include "driver/gpio.h"
 
 #include "esp_wifi.h"
+#include "esp_timer.h"
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "nvs_flash.h"
@@ -20,6 +21,9 @@
 #include <rcl/rcl.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
+#include <uxr/client/transport.h>
+#include <uros_network_interfaces.h>
+#include <rmw_microxrcedds_c/config.h>
 
 //UDP
 #include <rmw_microros/rmw_microros.h>
@@ -27,6 +31,8 @@
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/imu.h>
 #include <sensor_msgs/msg/nav_sat_fix.h>
+#include <cmath>
+
 
 
 
@@ -39,6 +45,27 @@ volatile int32_t enc_count_fl = 0;
 volatile int32_t enc_count_fr = 0;
 volatile int32_t enc_count_ml = 0;
 volatile int32_t enc_count_mr = 0;
+
+// micro-ROS globals
+rcl_node_t node;
+rcl_publisher_t odom_pub;
+rcl_publisher_t imu_pub;
+rcl_publisher_t gps_pub;
+rclc_support_t support;
+rcl_allocator_t allocator;
+
+nav_msgs__msg__Odometry odom_msg;
+sensor_msgs__msg__Imu imu_msg;
+sensor_msgs__msg__NavSatFix gps_msg;
+
+// Odometry state
+float odom_x = 0.0f;
+float odom_y = 0.0f;
+float odom_theta = 0.0f;
+#define WHEEL_BASE 0.4f  // meters — measure your actual chassis
+#define DESKTOP_IP "192.168.86.24"
+#define UROS_PORT 8888
+
 
 
 static EventGroupHandle_t s_wifi_event_group;
@@ -134,6 +161,73 @@ void control_task(void *param) {
     vTaskDelay(pdMS_TO_TICKS(1));
     
   }
+}
+
+
+void microros_task(void *param) {
+  rcl_allocator_t allocator = rcl_get_default_allocator();
+  rclc_support_t support;
+
+  rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+  rcl_init_options_init(&init_options, allocator);
+
+  rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
+  rmw_uros_options_set_udp_address(DESKTOP_IP, "8888", rmw_options);
+
+  // wait for agent
+  while (rmw_uros_ping_agent(100, 3) != RCL_RET_OK) {
+    vTaskDelay(pdMS_TO_TICKS(500));
+  }
+
+  rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+  rclc_node_init_default(&node,   "robot_node", "", &support);
+
+  rclc_publisher_init_default(&odom_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs,msg, Odometry), "/odom");
+
+  rclc_publisher_init_default(&imu_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu), "/imu");
+
+  rclc_publisher_init_default(&gps_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, NavSatFix), "/gps");
+
+  //publish loop
+  int64_t last_odom_us = esp_timer_get_time();
+  int32_t last_fl = 0, last_fr = 0, last_ml = 0, last_mr = 0;
+  
+  while (true) {
+    int64_t now_us = esp_timer_get_time();
+    float dt = (now_us - last_odom_us) / 1e6f;
+    last_odom_us = now_us;
+
+    //odom
+    int32_t curr_fl = enc_count_fl, curr_fr = enc_count_fr;
+    int32_t curr_ml = enc_count_ml, curr_mr = enc_count_mr;
+
+    float v_left = ((curr_fl - last_fl) + (curr_ml - last_ml)) * 0.000224f / (2.0f * dt);
+    float v_right = ((curr_fr - last_fr) + (curr_mr - last_mr)) * 0.000224f / (2.0f * dt);
+
+    last_fl = curr_fl; last_fr = curr_fr;
+    last_ml = curr_ml; last_mr = curr_mr;
+
+    float v = (v_left + v_right) / 2.0f;
+    float omega = (v_right - v_left) / WHEEL_BASE;
+
+    odom_theta += omega * dt;
+    odom_x += v * cosf(odom_theta) * dt;
+    odom_y += v * sinf(odom_theta) * dt;
+
+    odom_msg.pose.pose.position.x = odom_x;
+    odom_msg.pose.pose.position.y = odom_y;
+
+    odom_msg.pose.pose.orientation.z = sinf(odom_theta / 2.0f);
+    odom_msg.pose.pose.orientation.w = cosf(odom_theta / 2.0f);
+    odom_msg.twist.twist.linear.x = v;
+    odom_msg.twist.twist.angular.z = omega;
+
+    rcl_publish(&odom_pub, &odom_msg, NULL);
+    vTaskDelay(pdMS_TO_TICKS(20));
+
+  }
+
+
 }
 
 extern "C" void app_main(void) {
