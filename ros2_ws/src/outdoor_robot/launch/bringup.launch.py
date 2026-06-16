@@ -7,6 +7,10 @@ def generate_launch_description():
     pkg = get_package_share_directory('outdoor_robot')
     ekf_config = os.path.join(pkg, 'config', 'ekf.yaml')
     navsat_config = os.path.join(pkg, 'config', 'navsat_transform.yaml')
+    urdf_file = os.path.join(pkg, 'urdf', 'robot.urdf.xacro')
+
+    import xacro
+    robot_description = xacro.process_file(urdf_file).toxml()
 
     return LaunchDescription([
 
@@ -16,6 +20,14 @@ def generate_launch_description():
             name='micro_ros_agent',
             arguments=['udp4', '--port', '8888'],
             output='screen'
+        ),
+
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            output='screen',
+            parameters=[{'robot_description': robot_description}]
         ),
 
         Node(
