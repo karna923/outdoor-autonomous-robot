@@ -33,6 +33,20 @@
 #include <sensor_msgs/msg/nav_sat_fix.h>
 #include <cmath>
 
+//IMU
+#include "driver/i2c.h"
+
+
+#define I2C_MASTER_NUM I2C_NUM_0
+#define I2C_MASTER_FREQ_HZ 400000
+#define MPU6050_ADDR 0x68
+#define MPU6050_PWR_MGMT_1 0x6B
+#define MPU6050_ACCEL_OUT 0x3B
+#define MPU6050_ACCEL_SCALE  16384.0f
+#define MPU6050_GYRO_SCALE   131.0f
+#define GRAVITY_MS2          9.81f
+#define DEG_TO_RAD           (3.14159265358979f / 180.0f)
+
 
 
 
@@ -164,6 +178,25 @@ void control_task(void *param) {
 }
 
 
+void imu_init() {
+  i2c_config_t conf = {};
+  conf.mode = I2C_MODE_MASTER;
+  conf.sda_io_num = IMU_SDA;
+  conf.scl_io_num = IMU_SCL;
+  conf.sda_pullup_en = GPIO_PULLUP_DISABLE;
+  conf.scl_pullup_en = GPIO_PULLUP_DISABLE;
+
+  conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
+
+  i2c_param_config(I2C_MASTER_NUM, &conf);
+  i2c_driver_install(I2C_MASTER_NUM, I2C_MODE_MASTER, 0, 0, 0);
+
+  //wakeup
+  uint8_t wake_cmd[] = {MPU6050_PWR_MGMT_1, 0x00};
+  i2c_master_write_to_device(I2C_MASTER_NUM, MPU6050_ADDR, wake_cmd, sizeof(wake_cmd), pdMS_TO_TICKS(100));
+  
+}
+
 void microros_task(void *param) {
   rcl_allocator_t allocator = rcl_get_default_allocator();
   rclc_support_t support;
@@ -223,8 +256,32 @@ void microros_task(void *param) {
     odom_msg.twist.twist.angular.z = omega;
 
     rcl_publish(&odom_pub, &odom_msg, NULL);
-    vTaskDelay(pdMS_TO_TICKS(20));
 
+    //imu
+    uint8_t reg = MPU6050_ACCEL_OUT;
+    uint8_t imu_buf[14];
+    esp_err_t err = i2c_master_write_read_device(I2C_MASTER_NUM, MPU6050_ADDR, &reg, 1, imu_buf, 14, pdMS_TO_TICKS(100));
+
+    if (err == ESP_OK) {
+      int16_t ax = (imu_buf[0] << 8) | imu_buf[1];
+      int16_t ay = (imu_buf[2] << 8) | imu_buf[3];
+      int16_t az = (imu_buf[4] << 8) | imu_buf[5];
+      int16_t gx = (imu_buf[8] << 8) | imu_buf[9];
+      int16_t gy = (imu_buf[10] << 8) | imu_buf[11];
+      int16_t gz = (imu_buf[12] << 8) | imu_buf[13];
+
+      imu_msg.linear_acceleration.x = ax / MPU6050_ACCEL_SCALE * GRAVITY_MS2;
+      imu_msg.linear_acceleration.y = ay / MPU6050_ACCEL_SCALE * GRAVITY_MS2;
+      imu_msg.linear_acceleration.z = az / MPU6050_ACCEL_SCALE * GRAVITY_MS2;
+
+      imu_msg.angular_velocity.x = gx / MPU6050_GYRO_SCALE * DEG_TO_RAD;
+      imu_msg.angular_velocity.y = gy / MPU6050_GYRO_SCALE * DEG_TO_RAD;
+      imu_msg.angular_velocity.z = gz / MPU6050_GYRO_SCALE * DEG_TO_RAD;
+
+      rcl_publish(&imu_pub, &imu_msg, NULL);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(20));
   }
 
 
@@ -282,9 +339,11 @@ extern "C" void app_main(void) {
   motor_ml->setPID(50.0f, 5.0f, 0.5f);
   motor_mr->setPID(50.0f, 5.0f, 0.5f);
 
+
   wifi_init_sta();
+  imu_init();
 
-
+  xTaskCreate(microros_task, "microros_task", 8192, NULL, 4, NULL);
   xTaskCreate(control_task, "control_task",
               4096, (void*)"Hello ESP32",
               5, NULL);
