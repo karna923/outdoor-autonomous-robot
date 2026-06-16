@@ -36,6 +36,12 @@
 //IMU
 #include "driver/i2c.h"
 
+//GPS
+#include "driver/uart.h"
+#define GPS_UART_NUM UART_NUM_2
+#define GPS_BAUD_RATE 9600
+#define GPS_BUF_SIZE 512
+
 
 #define I2C_MASTER_NUM I2C_NUM_0
 #define I2C_MASTER_FREQ_HZ 400000
@@ -197,6 +203,19 @@ void imu_init() {
   
 }
 
+void gps_init() {
+  uart_config_t uart_config = {};
+  uart_config.baud_rate = GPS_BAUD_RATE;
+  uart_config.data_bits = UART_DATA_8_BITS;
+  uart_config.parity    = UART_PARITY_DISABLE;
+  uart_config.stop_bits = UART_STOP_BITS_1;
+  uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
+
+  uart_param_config(GPS_UART_NUM, &uart_config);
+  uart_set_pin(GPS_UART_NUM, GPS_TX, GPS_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+  uart_driver_install(GPS_UART_NUM, GPS_BUF_SIZE * 2, 0, 0, NULL, 0);
+}
+
 void microros_task(void *param) {
   rcl_allocator_t allocator = rcl_get_default_allocator();
   rclc_support_t support;
@@ -281,6 +300,36 @@ void microros_task(void *param) {
       rcl_publish(&imu_pub, &imu_msg, NULL);
     }
 
+    // GPS read
+  uint8_t gps_buf[GPS_BUF_SIZE];
+  int len = uart_read_bytes(GPS_UART_NUM, gps_buf, GPS_BUF_SIZE - 1, pdMS_TO_TICKS(10));
+  if (len > 0) {
+    gps_buf[len] = '\0';
+    char *line = strstr((char*)gps_buf, "$GNGGA");
+    if (!line) line = strstr((char*)gps_buf, "$GPGGA");
+    if (line) {
+        double lat, lon, alt;
+        int fix, sats;
+        char lat_dir, lon_dir;
+        // parse: time, lat, lat_dir, lon, lon_dir, fix, sats, hdop, alt
+        int parsed = sscanf(line, "$G%*2c,%*f,%lf,%c,%lf,%c,%d,%d,%*f,%lf",
+                            &lat, &lat_dir, &lon, &lon_dir, &fix, &sats, &alt);
+        if (parsed == 7 && fix > 0) {
+            // convert ddmm.mmmm to decimal degrees
+            double lat_deg = (int)(lat / 100) + fmod(lat, 100.0) / 60.0;
+            double lon_deg = (int)(lon / 100) + fmod(lon, 100.0) / 60.0;
+            if (lat_dir == 'S') lat_deg = -lat_deg;
+            if (lon_dir == 'W') lon_deg = -lon_deg;
+
+            gps_msg.latitude  = lat_deg;
+            gps_msg.longitude = lon_deg;
+            gps_msg.altitude  = alt;
+            gps_msg.status.status = 0; // STATUS_FIX
+            rcl_publish(&gps_pub, &gps_msg, NULL);
+        }
+    }
+  }
+
     vTaskDelay(pdMS_TO_TICKS(20));
   }
 
@@ -342,6 +391,7 @@ extern "C" void app_main(void) {
 
   wifi_init_sta();
   imu_init();
+  gps_init();
 
   xTaskCreate(microros_task, "microros_task", 8192, NULL, 4, NULL);
   xTaskCreate(control_task, "control_task",
