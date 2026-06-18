@@ -1,9 +1,14 @@
+<!-- WHEEL_BASE: TBD — measure after assembly and add wheel links -->
+<!-- 6x wheel links needed: FL, FR, ML, MR, RL, RR -->
+<!-- Rocker-bogie suspension means wheel z-positions vary with terrain -->
+
+
 <?xml version="1.0"?>
 <robot name="outdoor_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- Base dimensions — measure and update these -->
-  <xacro:property name="base_length" value="0.5"/>
-  <xacro:property name="base_width" value="0.4"/>
+  <xacro:property name="base_length" value="1.27173"/>
+  <xacro:property name="base_width" value="0.51881"/>
   <xacro:property name="base_height" value="0.1"/>
   <xacro:property name="wheel_radius" value="0.05"/>
   <xacro:property name="wheel_width" value="0.04"/>
@@ -24,8 +29,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="3.0"/>
-      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.05"/>
+      <mass value="8.5"/>
+      <inertia ixx="0.193" ixy="0" ixz="0" iyy="1.144" iyz="0" izz="1.333"/>
     </inertial>
   </link>
 
@@ -34,7 +39,7 @@
   <joint name="imu_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
-    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/> <!--MEASURE: IMU POS ON CHASSIS-->
   </joint>
 
   <!-- GPS link -->
@@ -42,7 +47,7 @@
   <joint name="gps_joint" type="fixed">
     <parent link="base_link"/>
     <child link="gps_link"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/> <!--MEASURE: GPS MAST HEIGHT-->
   </joint>
 
   <!-- Lidar link -->
@@ -50,7 +55,7 @@
   <joint name="laser_joint" type="fixed">
     <parent link="base_link"/>
     <child link="laser_frame"/>
-    <origin xyz="0.2 0 0.1" rpy="0 0 0"/>
+    <origin xyz="0.2 0 0.1" rpy="0 0 0"/> <!--MEASURE: LIDAR MOUNT POS-->
   </joint>
 
 </robot>
