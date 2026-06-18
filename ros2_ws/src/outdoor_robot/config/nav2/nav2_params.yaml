@@ -44,20 +44,20 @@ controller_server:
 
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25       # TUNE: meters
-      yaw_goal_tolerance: 0.25      # TUNE: radians
+      xy_goal_tolerance: 0.5       # TUNE: meters
+      yaw_goal_tolerance: 0.5      # TUNE: radians
       stateful: true
 
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.3       # TUNE: m/s, start conservative
+      desired_linear_vel: 0.5       # TUNE: m/s, start conservative
       max_linear_accel: 0.5         # TUNE: m/s^2
       max_linear_decel: 0.5         # TUNE: m/s^2
-      lookahead_dist: 0.6           # TUNE: meters
-      min_lookahead_dist: 0.3
-      max_lookahead_dist: 0.9
+      lookahead_dist: 1.0           # TUNE: meters
+      min_lookahead_dist: 0.6
+      max_lookahead_dist: 2.0
       lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 0.5  # TUNE: rad/s
+      rotate_to_heading_angular_vel: 0.4  # TUNE: rad/s
       use_velocity_scaled_lookahead_dist: false
       min_approach_linear_velocity: 0.05
       use_regulated_linear_velocity_scaling: true
@@ -77,10 +77,10 @@ local_costmap:
       global_frame: odom
       robot_base_frame: base_link
       rolling_window: true
-      width: 3          # TUNE: meters, local window size
-      height: 3
+      width: 5          # TUNE: meters, local window size
+      height: 5
       resolution: 0.05  # TUNE: meters per cell
-      robot_radius: 0.3 # TUNE: measure your actual robot footprint
+      footprint: "[[0.636, 0.259], [0.636, -0.259], [-0.636, -0.259], [-0.636, 0.259]]"
       plugins: ["obstacle_layer", "inflation_layer"]
 
       obstacle_layer:
@@ -108,7 +108,7 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      robot_radius: 0.3           # TUNE: match local_costmap
+      footprint: "[[0.636, 0.259], [0.636, -0.259], [-0.636, -0.259], [-0.636, 0.259]]"
       resolution: 0.05
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
 
@@ -141,21 +141,21 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
       tolerance: 0.5
-      use_astar: false
+      use_astar: true
       allow_unknown: true
 
-recoveries_server:
+behavior_server:
   ros__parameters:
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
-    recovery_plugins: ["spin", "back_up", "wait"]
+    behavior_plugins: ["spin", "back_up", "wait"]
     spin:
-      plugin: "nav2_recoveries/Spin"
+      plugin: "nav2_behaviors/Spin"
     back_up:
-      plugin: "nav2_recoveries/BackUp"
+      plugin: "nav2_behaviors/BackUp"
     wait:
-      plugin: "nav2_recoveries/Wait"
+      plugin: "nav2_behaviors/Wait"
     global_frame: odom
     robot_base_frame: base_link
     transform_timeout: 0.1
