@@ -80,7 +80,7 @@ local_costmap:
       width: 5          # TUNE: meters, local window size
       height: 5
       resolution: 0.05  # TUNE: meters per cell
-      footprint: "[[0.636, 0.259], [0.636, -0.259], [-0.636, -0.259], [-0.636, 0.259]]"
+      footprint: "[[0.4442, 0.277], [0.4442, -0.277], [-0.4442, -0.277], [-0.4442, 0.277]]"
       plugins: ["obstacle_layer", "inflation_layer"]
 
       obstacle_layer:
@@ -108,7 +108,7 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      footprint: "[[0.636, 0.259], [0.636, -0.259], [-0.636, -0.259], [-0.636, 0.259]]"
+      footprint: "[[0.4442, 0.277], [0.4442, -0.277], [-0.4442, -0.277], [-0.4442, 0.277]]"
       resolution: 0.05
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
 

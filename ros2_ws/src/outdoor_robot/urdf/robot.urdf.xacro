@@ -1,15 +1,15 @@
+
+<?xml version="1.0"?>
+<robot name="outdoor_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 <!-- WHEEL_BASE: TBD — measure after assembly and add wheel links -->
 <!-- 6x wheel links needed: FL, FR, ML, MR, RL, RR -->
 <!-- Rocker-bogie suspension means wheel z-positions vary with terrain -->
 
 
-<?xml version="1.0"?>
-<robot name="outdoor_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
-
   <!-- Base dimensions — measure and update these -->
-  <xacro:property name="base_length" value="1.27173"/>
-  <xacro:property name="base_width" value="0.51881"/>
-  <xacro:property name="base_height" value="0.1"/>
+  <xacro:property name="base_length" value="0.8884"/>
+  <xacro:property name="base_width" value="0.554"/>
+  <xacro:property name="base_height" value="0.3"/>
   <xacro:property name="wheel_radius" value="0.05"/>
   <xacro:property name="wheel_width" value="0.04"/>
 
@@ -29,8 +29,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="8.5"/>
-      <inertia ixx="0.193" ixy="0" ixz="0" iyy="1.144" iyz="0" izz="1.333"/>
+      <mass value="6.18"/>
+      <inertia ixx="0.2044" ixy="0" ixz="0" iyy="0.4528" iyz="0" izz="0.5645"/>
     </inertial>
   </link>
 
