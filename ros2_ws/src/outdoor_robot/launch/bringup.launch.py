@@ -4,7 +4,6 @@ from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import xacro
 
-
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
@@ -14,23 +13,10 @@ def generate_launch_description():
     ekf_config = os.path.join(pkg, 'config', 'ekf.yaml')
     navsat_config = os.path.join(pkg, 'config', 'navsat_transform.yaml')
     urdf_file = os.path.join(pkg, 'urdf', 'robot.urdf.xacro')
-    
-    slam_share_dir = get_package_share_directory('slam_toolbox')
-    slam_config = os.path.join(pkg, 'config', 'slam_toolbox.yaml')
-    
+
     nav2_share_dir = get_package_share_directory('nav2_bringup')
     nav2_config = os.path.join(pkg, 'config', 'nav2', 'nav2_params.yaml')
-    
-    slam_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(slam_share_dir, 'launch', 'online_async_launch.py')
-            ),
-            launch_arguments={
-                'slam_params_file': slam_config,
-                'use_sim_time': 'false'
-            }.items()
-    )
-    
+
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(nav2_share_dir, 'launch', 'navigation_launch.py')
@@ -40,8 +26,6 @@ def generate_launch_description():
             'use_sim_time': 'false'
         }.items()
     )
-    
-    
 
     robot_description = xacro.process_file(urdf_file).toxml()
 
@@ -83,8 +67,13 @@ def generate_launch_description():
                 ('odometry/filtered', '/odometry/filtered')
             ]
         ),
-        
-        slam_launch, 
-        
-        nav2_launch, 
+
+        Node(
+            package='obstacle_avoidance',
+            executable='obstacle_avoidance_node',
+            name='obstacle_avoidance_node',
+            output='screen'
+        ),
+
+        nav2_launch,
     ])

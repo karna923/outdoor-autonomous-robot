@@ -1,8 +1,5 @@
 #ifndef PINS_ESP2_HPP
 #define PINS_ESP2_HPP
-#define DESKTOP_IP "192.168.86.24"
-#define LIDAR_BRIDGE_PORT 8889
-#define LIDAR_CMD_PORT 8890
 
 //MDD3A #3 - REAR motors
 //Motor 5 (rear left)
@@ -17,9 +14,11 @@
 #define ENC_RL 34
 #define ENC_RR 35
 
-//RPLidar def
+//HC-SR04 ultrasonic
+#define ULTRASONIC_TRIG 17
+#define ULTRASONIC_ECHO 16
 
-#define RPLIDAR_RX 16
-#define RPLIDAR_TX 17
+//SG90 servo
+#define SERVO_PWM 19
 
 #endif

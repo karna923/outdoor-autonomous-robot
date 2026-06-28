@@ -7,7 +7,7 @@ MotorController::MotorController()
 {
   // Subscribe to velocity commands from Nav2
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-    "/cmd_vel", 10,
+    "/cmd_vel_safe", 10,
     std::bind(&MotorController::cmd_vel_callback, this, std::placeholders::_1));
   
   RCLCPP_INFO(this->get_logger(), "Motor controller node started");
