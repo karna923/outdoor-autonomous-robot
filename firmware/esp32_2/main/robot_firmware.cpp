@@ -29,7 +29,9 @@
 
 #include <sensor_msgs/msg/range.h>
 #include <cmath>
-
+#define WHEEL_DIAMETER_M 0.085f
+#define TICKS_PER_REV 1400.0f
+#define METERS_PER_TICK (M_PI * WHEEL_DIAMETER_M / TICKS_PER_REV)  // 0.0001907 m/tick
 Motor* motor_rl = nullptr;
 Motor* motor_rr = nullptr;
 
@@ -169,10 +171,10 @@ void control_task(void *param) {
     //delta tick and velocity conversion
 
     int32_t delta_rl = curr_rl - last_rl;
-    float vel_rl = delta_rl * 0.000224f / 0.001f;
+    float vel_rl = delta_rl * METERS_PER_TICK / 0.001f;
 
     int32_t delta_rr = curr_rr - last_rr;
-    float vel_rr = delta_rr * 0.000224f / 0.001f;
+    float vel_rr = delta_rr * METERS_PER_TICK / 0.001f;
 
     //compute call
     motor_rl->compute(0.0f, vel_rl);

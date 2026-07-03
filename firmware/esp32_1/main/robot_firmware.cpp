@@ -53,18 +53,30 @@
 #define GRAVITY_MS2          9.81f
 #define DEG_TO_RAD           (3.14159265358979f / 180.0f)
 
+// Wheel/encoder constants — derive meters/tick from actual wheel size instead of
+// hardcoding a magic number in six places. Update WHEEL_DIAMETER_M when the wheel changes.
+#define WHEEL_DIAMETER_M 0.085f
+#define TICKS_PER_REV 1400.0f
+#define METERS_PER_TICK (M_PI * WHEEL_DIAMETER_M / TICKS_PER_REV)  // 0.0001907 m/tick
 
+// Middle motors (ML/MR) are not physically installed yet. Set this to 1 once the
+// hardware arrives and is wired up. Do NOT just delete the ML/MR code, flip this instead.
+#define MIDDLE_MOTORS_INSTALLED 0
 
 
 Motor* motor_fl = nullptr;
 Motor* motor_fr = nullptr;
+#if MIDDLE_MOTORS_INSTALLED
 Motor* motor_ml = nullptr;
 Motor* motor_mr = nullptr;
+#endif
 
 volatile int32_t enc_count_fl = 0;
 volatile int32_t enc_count_fr = 0;
+#if MIDDLE_MOTORS_INSTALLED
 volatile int32_t enc_count_ml = 0;
 volatile int32_t enc_count_mr = 0;
+#endif
 
 // micro-ROS globals
 rcl_node_t node;
@@ -82,7 +94,8 @@ sensor_msgs__msg__NavSatFix gps_msg;
 float odom_x = 0.0f;
 float odom_y = 0.0f;
 float odom_theta = 0.0f;
-#define WHEEL_BASE 0.4f  // meters — measure your actual chassis
+#define WHEEL_BASE 0.4f  // meters — measure your actual chassis. Unaffected by ML/MR presence;
+                         // FL/FR are still the leftmost/rightmost wheels.
 #define DESKTOP_IP "192.168.86.24"
 #define UROS_PORT 8888
 
@@ -139,6 +152,7 @@ void IRAM_ATTR isr_enc_fr(void* arg) {
     enc_count_fr = enc_count_fr + 1;
   }
 
+#if MIDDLE_MOTORS_INSTALLED
 void IRAM_ATTR isr_enc_ml(void* arg) {
     enc_count_ml = enc_count_ml + 1;
   }
@@ -146,37 +160,53 @@ void IRAM_ATTR isr_enc_ml(void* arg) {
 void IRAM_ATTR isr_enc_mr(void* arg) {
     enc_count_mr = enc_count_mr + 1;
   }
+#endif
+
 void control_task(void *param) {
 
+#if MIDDLE_MOTORS_INSTALLED
   int32_t last_fl = 0, last_fr = 0, last_ml = 0, last_mr = 0;
+#else
+  int32_t last_fl = 0, last_fr = 0;
+#endif
   while(1) {
     
+#if MIDDLE_MOTORS_INSTALLED
     int32_t curr_fl = enc_count_fl, curr_fr = enc_count_fr, curr_ml = enc_count_ml, curr_mr = enc_count_mr;
+#else
+    int32_t curr_fl = enc_count_fl, curr_fr = enc_count_fr;
+#endif
 
     //delta tick and velocity conversion
 
     int32_t delta_fl = curr_fl - last_fl;
-    float vel_fl = delta_fl * 0.000224f / 0.001f;
+    float vel_fl = delta_fl * METERS_PER_TICK / 0.001f;
 
     int32_t delta_fr = curr_fr - last_fr;
-    float vel_fr = delta_fr * 0.000224f / 0.001f;
+    float vel_fr = delta_fr * METERS_PER_TICK / 0.001f;
 
+#if MIDDLE_MOTORS_INSTALLED
     int32_t delta_ml = curr_ml - last_ml;
-    float vel_ml = delta_ml * 0.000224f / 0.001f;
+    float vel_ml = delta_ml * METERS_PER_TICK / 0.001f;
 
     int32_t delta_mr = curr_mr - last_mr;
-    float vel_mr = delta_mr * 0.000224f / 0.001f;
+    float vel_mr = delta_mr * METERS_PER_TICK / 0.001f;
+#endif
 
     //compute call
     motor_fl->compute(0.0f, vel_fl);
     motor_fr->compute(0.0f, vel_fr);
+#if MIDDLE_MOTORS_INSTALLED
     motor_ml->compute(0.0f, vel_ml);
     motor_mr->compute(0.0f, vel_mr);
+#endif
 
     last_fl = curr_fl;
     last_fr = curr_fr;
+#if MIDDLE_MOTORS_INSTALLED
     last_ml = curr_ml;
     last_mr = curr_mr;
+#endif
 
     vTaskDelay(pdMS_TO_TICKS(1));
     
@@ -242,7 +272,11 @@ void microros_task(void *param) {
 
   //publish loop
   int64_t last_odom_us = esp_timer_get_time();
+#if MIDDLE_MOTORS_INSTALLED
   int32_t last_fl = 0, last_fr = 0, last_ml = 0, last_mr = 0;
+#else
+  int32_t last_fl = 0, last_fr = 0;
+#endif
   
   while (true) {
     int64_t now_us = esp_timer_get_time();
@@ -250,14 +284,28 @@ void microros_task(void *param) {
     last_odom_us = now_us;
 
     //odom
+#if MIDDLE_MOTORS_INSTALLED
     int32_t curr_fl = enc_count_fl, curr_fr = enc_count_fr;
     int32_t curr_ml = enc_count_ml, curr_mr = enc_count_mr;
 
-    float v_left = ((curr_fl - last_fl) + (curr_ml - last_ml)) * 0.000224f / (2.0f * dt);
-    float v_right = ((curr_fr - last_fr) + (curr_mr - last_mr)) * 0.000224f / (2.0f * dt);
+    // Average both wheels per side (FL+ML, FR+MR) — valid only when both wheels
+    // per side are actually present and contributing real ticks.
+    float v_left = ((curr_fl - last_fl) + (curr_ml - last_ml)) * METERS_PER_TICK / (2.0f * dt);
+    float v_right = ((curr_fr - last_fr) + (curr_mr - last_mr)) * METERS_PER_TICK / (2.0f * dt);
 
     last_fl = curr_fl; last_fr = curr_fr;
     last_ml = curr_ml; last_mr = curr_mr;
+#else
+    int32_t curr_fl = enc_count_fl, curr_fr = enc_count_fr;
+
+    // Only FL/FR physically present right now. Do NOT divide by 2 here, that "2" in
+    // the MIDDLE_MOTORS_INSTALLED branch above accounts for averaging two wheels per
+    // side. With one wheel per side, dividing by 2 would halve your real velocity.
+    float v_left = (curr_fl - last_fl) * METERS_PER_TICK / dt;
+    float v_right = (curr_fr - last_fr) * METERS_PER_TICK / dt;
+
+    last_fl = curr_fl; last_fr = curr_fr;
+#endif
 
     float v = (v_left + v_right) / 2.0f;
     float omega = (v_right - v_left) / WHEEL_BASE;
@@ -357,6 +405,7 @@ extern "C" void app_main(void) {
   enc_config_fr.intr_type = GPIO_INTR_ANYEDGE;
   gpio_config(&enc_config_fr);
 
+#if MIDDLE_MOTORS_INSTALLED
   gpio_config_t enc_config_ml = {};
   enc_config_ml.pin_bit_mask = (1ULL << ENC_ML);
   enc_config_ml.mode = GPIO_MODE_INPUT;
@@ -372,21 +421,45 @@ extern "C" void app_main(void) {
   enc_config_mr.pull_down_en = GPIO_PULLDOWN_DISABLE;
   enc_config_mr.intr_type = GPIO_INTR_ANYEDGE;
   gpio_config(&enc_config_mr);
+#else
+
+  gpio_config_t enc_config_ml_unused = {};
+  enc_config_ml_unused.pin_bit_mask = (1ULL << ENC_ML);
+  enc_config_ml_unused.mode = GPIO_MODE_INPUT;
+  enc_config_ml_unused.pull_up_en = GPIO_PULLUP_DISABLE;
+  enc_config_ml_unused.pull_down_en = GPIO_PULLDOWN_ENABLE;
+  enc_config_ml_unused.intr_type = GPIO_INTR_DISABLE;
+  gpio_config(&enc_config_ml_unused);
+
+  gpio_config_t enc_config_mr_unused = {};
+  enc_config_mr_unused.pin_bit_mask = (1ULL << ENC_MR);
+  enc_config_mr_unused.mode = GPIO_MODE_INPUT;
+  enc_config_mr_unused.pull_up_en = GPIO_PULLUP_DISABLE;
+  enc_config_mr_unused.pull_down_en = GPIO_PULLDOWN_ENABLE;
+  enc_config_mr_unused.intr_type = GPIO_INTR_DISABLE;
+  gpio_config(&enc_config_mr_unused);
+#endif
 
   gpio_isr_handler_add((gpio_num_t)ENC_FL, isr_enc_fl, nullptr);
   gpio_isr_handler_add((gpio_num_t)ENC_FR, isr_enc_fr, nullptr);
+#if MIDDLE_MOTORS_INSTALLED
   gpio_isr_handler_add((gpio_num_t)ENC_ML, isr_enc_ml, nullptr);
   gpio_isr_handler_add((gpio_num_t)ENC_MR, isr_enc_mr, nullptr);
+#endif
 
   motor_fl = new Motor(MOTOR_FL_A, MOTOR_FL_B, LEDC_CHANNEL_0, LEDC_CHANNEL_1);
   motor_fr = new Motor(MOTOR_FR_A, MOTOR_FR_B, LEDC_CHANNEL_2, LEDC_CHANNEL_3);
+#if MIDDLE_MOTORS_INSTALLED
   motor_ml = new Motor(MOTOR_ML_A, MOTOR_ML_B, LEDC_CHANNEL_4, LEDC_CHANNEL_5);
   motor_mr = new Motor(MOTOR_MR_A, MOTOR_MR_B, LEDC_CHANNEL_6, LEDC_CHANNEL_7);
+#endif
 
   motor_fl->setPID(50.0f, 5.0f, 0.5f);
   motor_fr->setPID(50.0f, 5.0f, 0.5f);
+#if MIDDLE_MOTORS_INSTALLED
   motor_ml->setPID(50.0f, 5.0f, 0.5f);
   motor_mr->setPID(50.0f, 5.0f, 0.5f);
+#endif
 
 
   wifi_init_sta();
@@ -401,4 +474,3 @@ extern "C" void app_main(void) {
 
 
   }
-

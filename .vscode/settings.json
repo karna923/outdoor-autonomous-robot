@@ -36,5 +36,9 @@
     "/home/pushkar/microros_ws/install/micro_ros_msgs/lib/python3.12/site-packages"
   ],
   "C_Cpp.errorSquiggles": "enabled",
-  "idf.currentSetup": "/home/pushkar/.espressif/v6.0.1/esp-idf"
+  "idf.currentSetup": "/home/pushkar/.espressif/v6.0.1/esp-idf",
+  "idf.openOcdConfigs": [
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32.cfg"
+  ]
 }

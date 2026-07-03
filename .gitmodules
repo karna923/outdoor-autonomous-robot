@@ -1,0 +1,8 @@
+[submodule "firmware/esp32_1/components/micro_ros_espidf_component"]
+	path = firmware/esp32_1/components/micro_ros_espidf_component
+	url = https://github.com/karna923/micro_ros_espidf_component.git
+	branch = esp32-libmicroros-fix
+[submodule "firmware/esp32_2/components/micro_ros_espidf_component"]
+	path = firmware/esp32_2/components/micro_ros_espidf_component
+	url = https://github.com/karna923/micro_ros_espidf_component.git
+	branch = esp32-gitignore-fix
